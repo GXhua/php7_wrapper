@@ -59,21 +59,17 @@ if (Z_REFCOUNTED_P(zval_ptr)) {
 但是在phpng中始终返回zend_string不需要duplicate参数所以兼容宏如下：
 ```c
 #if PHP_MAJOR_VERSION < 7
-
 #define SW_ZVAL_STRINGL                       ZVAL_STRINGL
 #define SW_ZVAL_STRING                        ZVAL_STRING
 #define SW_RETURN_STRINGL                     RETURN_STRINGL
 #define SW_RETURN_STRING                      RETURN_STRING
 #define SW_RETVAL_STRINGL                     RETVAL_STRINGL
-
 #else
-
 #define SW_ZVAL_STRINGL(z, s, l, dup)         ZVAL_STRINGL(z, s, l)
 #define SW_ZVAL_STRING(z,s,dup)               ZVAL_STRING(z,s)
 #define SW_RETURN_STRINGL(s, l, dup)          RETURN_STRINGL(s, l)
 #define SW_RETURN_STRING(val, dup)            RETURN_STRING(val)
 #define SW_RETVAL_STRINGL(s, l, dup)          RETVAL_STRINGL(s, l);
-
 #endif
 ```
 可以看到在phpng中就是简单的忽略了dup参数，需要注意的是，如果你原来的代码中最后一个参数是0并且第一个参数是在堆上申请的需要efree(s)第一个参数来释放内存。
