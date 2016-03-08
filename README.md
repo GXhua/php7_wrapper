@@ -11,22 +11,44 @@
 
 ```c
 #if PHP_MAJOR_VERSION < 7
-  #define SW_MAKE_STD_ZVAL(p)                   MAKE_STD_ZVAL(p)
+  #define SW_MAKE_STD_ZVAL(p)            MAKE_STD_ZVAL(p)
 #else
-  #define SW_MAKE_STD_ZVAL(p)                   zval _stack_zval_##p; p = &(_stack_zval_##p)  //宏展开后就是在栈上定义的zval
+  #define SW_MAKE_STD_ZVAL(p)            zval _stack_zval_##p; p = &(_stack_zval_##p)  //宏展开后就是在栈上定义的zval
 #endif
 ```
 > 可以看到在phpng中SW_MAKE_STD_ZVAL就是在栈上定义了一个zval 然后把地址赋值给p，在之前的php版本中就是直接调用MAKE_STD_ZVAL
 注意：此方法能适应大部分用到MAKE_STD_ZVAL的地方，但是有些时候（例如：函数内部将MAKE_STD_ZVAL得到的指针作为函数返回值返回了）是不行的，需要手动emalloc，就如开头说的"通过引入一组兼容层函数来尽量少修改扩展代码"。
 
 ### 2、zval_ptr_dtor
-> zval_ptr_dtor在之前的php版本是调用函数来释放堆中的内存，如上文所说因为我们是在栈上创建的zval所以不需要释放.
+> zval_ptr_dtor在之前的php版本中传递参数是指针的指针，phpng中是zval的指针.
 首先，将扩展中所有的zval_ptr_dtor替换成sw_zval_ptr_dtor（以下都如此不再赘述）。
 兼容宏代码如下：
 ```c
 #if PHP_MAJOR_VERSION < 7
-  #define sw_zval_ptr_dtor                      zval_ptr_dtor
+  #define sw_zval_ptr_dtor               zval_ptr_dtor
 #else
-  #define sw_zval_ptr_dtor(p)                   zval_ptr_dtor(*p)
+  #define sw_zval_ptr_dtor(p)            zval_ptr_dtor(*p) //用*操作把指针的指针变成指针（好绕口）
 #endif
 ```
+有人可能会问，在上面说了是通过栈来模拟malloc内存，那这里的释放内存是不是会段错误？
+```c
+if (Z_REFCOUNTED_P(zval_ptr)) {
+		if (!Z_DELREF_P(zval_ptr)) {
+			_zval_dtor_func_for_ptr(Z_COUNTED_P(zval_ptr) ZEND_FILE_LINE_RELAY_CC);
+		} else {
+			GC_ZVAL_CHECK_POSSIBLE_ROOT(zval_ptr);
+		}
+	}
+```
+如上，因为phpng中释放内存之前会判断如果不是因为变量类型就跳过不做任何操作。
+
+### 3.zval_add_ref
+>添加引用计数的方法:
+```c
+#if PHP_MAJOR_VERSION < 7
+ #define sw_zval_add_ref             zval_add_ref
+#else
+ #define sw_zval_add_ref(p)          Z_TRY_ADDREF_P(*p)//phpng会先判断类型然后再加引用
+#endif
+```
+###4.
