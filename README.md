@@ -51,7 +51,8 @@ if (Z_REFCOUNTED_P(zval_ptr)) {
  #define sw_zval_add_ref(p)          Z_TRY_ADDREF_P(*p)//phpng会先判断类型然后再加引用
 #endif
 ```
-### 4.SW_ZVAL_STRING，SW_ZVAL_STRINGL，RETURN_STRINGL，RETVAL_STRINGL，RETURN_STRING
+
+### 4、SW_ZVAL_STRING，SW_ZVAL_STRINGL，RETURN_STRINGL，RETVAL_STRINGL，RETURN_STRING
 > 在之前的php版本中，这一组函数的最后一个参数是是否需要复制字符串如下：
 ```c
  Z_STRVAL_P(__z) = (duplicate?estrndup(__s, Z_STRLEN_P(__z)):(char*)__s);//duplicate就是上述一组函数的最后一个参数
