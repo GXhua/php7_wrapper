@@ -42,8 +42,8 @@ if (Z_REFCOUNTED_P(zval_ptr)) {
 ```
 如上，因为phpng中释放内存之前会判断如果不是引用变量类型就跳过不做任何操作。
 
-### 3.zval_add_ref
->添加引用计数的方法:
+### 3、zval_add_ref
+> 添加引用计数的方法:
 ```c
 #if PHP_MAJOR_VERSION < 7
  #define sw_zval_add_ref             zval_add_ref
