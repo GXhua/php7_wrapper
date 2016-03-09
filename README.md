@@ -5,9 +5,9 @@
 #### 内存和字符串相关
 
 ### 1、MAKE_STD_ZVAL
-> php7的改动很大的就是内存的部分，首先新设计的zval、zend_string、hashtable(ng中也叫zend_array)等数据结构体积很小并且很紧凑，能充分利用cpu的cache，其次大量用栈空间代替在堆中申请内存，反应到扩展层面就是去掉了MAKE_STD_ZVAL和ALLOC_INIT_ZVAL等内存申请的宏定义，因为phpng的zendapi都不需要在堆上申请内存然后把地址传给zendapi（当然如果业务确实需要你也可以手动emalloc内存），swoole和php-cp中是怎么做的呢？
-首先，将扩展中所有的MAKE_STD_ZVAL批量替换为SW_MAKE_STD_ZVAL
-其次，我们再看SW_MAKE_STD_ZVAL的定义：
+> php7的改动很大的就是内存的部分，首先新设计的zval、zend_string、hashtable(ng中也叫zend_array)等数据结构体积很小并且很紧凑，能充分利用cpu的cache，其次大量用栈空间代替在堆中申请内存，反应到扩展层面就是去掉了MAKE_STD_ZVAL和ALLOC_INIT_ZVAL等内存申请的宏定义，因为phpng的zendapi都不需要在堆上申请内存然后把地址传给zendapi（当然如果业务确实需要你也可以手动emalloc内存），swoole和php-cp中是怎么做的呢？  
+首先，将扩展中所有的MAKE_STD_ZVAL批量替换为SW_MAKE_STD_ZVAL  
+其次，我们再看SW_MAKE_STD_ZVAL的定义：  
 
 ```c
 #if PHP_MAJOR_VERSION < 7
@@ -20,8 +20,8 @@
 注意：此方法能适应大部分用到MAKE_STD_ZVAL的地方，但是有些时候（例如：函数内部将MAKE_STD_ZVAL得到的指针作为函数返回值返回了）是不行的，需要手动emalloc，就如开头说的"通过引入一组兼容层函数来尽量少修改扩展代码"。
 
 ### 2、zval_ptr_dtor
-> zval_ptr_dtor在之前的php版本中传递参数是指针的指针，phpng中是zval的指针.
-首先，将扩展中所有的zval_ptr_dtor替换成sw_zval_ptr_dtor（以下都如此不再赘述）。
+> zval_ptr_dtor在之前的php版本中传递参数是指针的指针，phpng中是zval的指针.  
+首先，将扩展中所有的zval_ptr_dtor替换成sw_zval_ptr_dtor（以下都如此不再赘述）。  
 兼容宏代码如下：
 ```c
 #if PHP_MAJOR_VERSION < 7
