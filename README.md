@@ -17,7 +17,7 @@
 #endif
 ```
 > 可以看到在phpng中SW_MAKE_STD_ZVAL就是在栈上定义了一个zval 然后把地址赋值给p，在之前的php版本中就是直接调用MAKE_STD_ZVAL
-注意：此方法能适应大部分用到MAKE_STD_ZVAL的地方，但是有些时候（例如：MAKE_STD_ZVAL得到的栈地址需要在其他函数中用）是不行的，需要手动emalloc，就如开头说的"通过引入一组兼容层函数来尽量少修改扩展代码"。
+注意：此方法能适应大部分用到MAKE_STD_ZVAL的地方，但是有些时候,例如：MAKE_STD_ZVAL得到的栈地址需要在其他函数中用(如果返回的变量是临时的变量可以用inline函数来解决)，是不行的，需要手动emalloc，就如开头说的"通过引入一组兼容层函数来尽量少修改扩展代码"。
 
 ### 2、zval_ptr_dtor
 > zval_ptr_dtor在之前的php版本中传递参数是指针的指针，phpng中是zval的指针.  
